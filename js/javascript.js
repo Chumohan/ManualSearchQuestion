@@ -91,7 +91,6 @@ $(document).ready(function main() {
       '<input id="plug_in_inputer" type="text">' +
       '<select id="plug_in_select_line">' +
       '<option value="0">线路一</option>' +
-      '<option value="1">线路二</option>' +
       "</select>" +
       '<button id="plug_in_search_button">查询</button>' +
       "<br/><br/>" +
@@ -107,38 +106,24 @@ $(document).ready(function main() {
     .on("click", "button", function btn_listen() {
       switch ($(this).context.id) {
         case "plug_in_position_up":
-          var top = $("#plug_in_main").css("top");
-          top = parseInt(top.replace(/px/, "")) - 100;
-          if (top < 0) top = 0;
-          $("#plug_in_main").css("top", top);
+          changePosition("top", -100);
           break;
 
         case "plug_in_position_down":
-          var top = $("#plug_in_main").css("top");
-          top = parseInt(top.replace(/px/, "")) + 100;
-          if (top > 500) top = 500;
-          $("#plug_in_main").css("top", top);
+          changePosition("top", 100);
           break;
 
         case "plug_in_position_left":
-          var left = $("#plug_in_main").css("left");
-          left = parseInt(left.replace(/px/, "")) - 100;
-          if (left < 0) left = 0;
-          $("#plug_in_main").css("left", left);
+          changePosition("left", -100);
           break;
 
         case "plug_in_position_right":
-          var left = $("#plug_in_main").css("left");
-          left = parseInt(left.replace(/px/, "")) + 100;
-          if (left > 1000) left = 1000;
-          $("#plug_in_main").css("left", left);
+          changePosition("left", 100);
           break;
 
         case "plug_in_search_button":
-          var urls = [
-            "https://huan.fm210.cn/api/answer?keyword=",
-            "http://cx.icodef.com/wyn-nb?v=3",
-          ];
+          var urls = ["https://huan.fm210.cn/api/answer?keyword="];
+
           var line = parseInt($("#plug_in_select_line").val());
           if (line >= urls.length) {
             alert("当前线路不存在");
@@ -154,45 +139,19 @@ $(document).ready(function main() {
                 function show_line_1_answer(data) {
                   switch (data.code) {
                     case 1:
-                      $("#plug_in_keyword").text(data["_source"]["keyword"]);
-                      $("#plug_in_answer").text(data["_source"]["da"]);
-                      $("#plug_in_check").text(data["_source"]["f"]);
+                      refreshAnswer(
+                        data["_source"]["keyword"],
+                        data["_source"]["da"],
+                        data["_source"]["f"]
+                      );
                       break;
 
                     case -1:
-                      $("#plug_in_keyword").text(question);
-                      $("#plug_in_answer").text(data["_source"]["da"]);
-                      $("#plug_in_check").text(" ");
+                      refreshAnswer(question, data["_source"]["da"], "");
                       break;
 
                     case -2:
-                      $("#plug_in_keyword").text(" ");
-                      $("#plug_in_answer").text(data["_source"]["da"]);
-                      $("#plug_in_check").text(" ");
-                      break;
-                  }
-                }
-              );
-              break;
-
-            case 1:
-              $.post(
-                url,
-                {
-                  question: question,
-                },
-                function show_line_2_answer(data) {
-                  switch (data["code"]) {
-                    case 1:
-                      $("#plug_in_keyword").text(question);
-                      $("#plug_in_answer").text(data["data"]);
-                      $("#plug_in_check").text(" ");
-                      break;
-
-                    case -1:
-                      $("#plug_in_keyword").text(question);
-                      $("#plug_in_answer").text("未搜索到答案");
-                      $("#plug_in_check").text(" ");
+                      refreshAnswer("", data["_source"]["data"], "");
                       break;
                   }
                 }
@@ -201,9 +160,20 @@ $(document).ready(function main() {
           }
 
           break;
-
-        default:
-          break;
       }
     });
+
+  function changePosition(position, px) {
+    var ele = $("#plug_in_main").css(position);
+    px = px + parseInt(ele.replace(/px/, ""));
+    if (px < 0) px = 0;
+    if (px > 500) px = 500;
+    $("#plug_in_main").css(position, px);
+  }
+
+  function refreshAnswer(q, a, c) {
+    $("#plug_in_keyword").text(q);
+    $("#plug_in_answer").text(a);
+    $("#plug_in_check").text(c);
+  }
 });
